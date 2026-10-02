@@ -594,3 +594,16 @@ The build output will be in `dist/`.
 If you're compiling in:
 - debug mode -> the folder needs to be called `dist/`
 - release mode -> the folder needs to be called `static/`
+
+### Deploying frontend-only on Vercel
+When deploying only the web frontend to Vercel, the API is **not** hosted there automatically.
+
+Set `api_base_url` in `web/config.js` (or in the generated `dist/config.js`) to your Moonlight Web server API URL, for example:
+```js
+window.__CONFIG_JS__ = {
+    path_prefix: "",
+    api_base_url: "https://your-server.example.com/api"
+}
+```
+
+If `api_base_url` is left empty, the frontend uses the same origin as the website (`/api`), which causes 404 errors on Vercel static deployments.

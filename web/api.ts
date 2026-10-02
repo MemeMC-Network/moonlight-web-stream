@@ -2,7 +2,7 @@ import { App, DeleteHostQuery, DeleteUserRequest, DetailedHost, DetailedUser, Ge
 import { showNotification } from "./component/notification"
 import { showMessage, showModal } from "./component/modal/index"
 import { ApiUserPasswordPrompt } from "./component/modal/login"
-import { buildUrl } from "./config_"
+import { buildApiBaseUrl } from "./config_"
 
 function parseIceServersFromLinkHeader(rawLinks: string): Array<RTCIceServer> {
     const iceServers: Array<RTCIceServer> = []
@@ -81,7 +81,7 @@ function setStoredBearer(value: string | null) {
 }
 
 export async function getApi(): Promise<Api> {
-    const host_url = buildUrl("/api")
+    const host_url = buildApiBaseUrl()
 
     let api = { host_url, bearer: getStoredBearer(), user: null, role: null }
 
@@ -101,7 +101,7 @@ export async function getApi(): Promise<Api> {
     return newApi
 }
 export async function tryLogin(): Promise<Api | null> {
-    const host_url = buildUrl("/api")
+    const host_url = buildApiBaseUrl()
 
     let api = { host_url, bearer: getStoredBearer(), user: null, role: null }
 
