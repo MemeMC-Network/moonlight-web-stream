@@ -3,7 +3,38 @@ import { showNotification } from "./component/notification"
 import { showMessage, showModal } from "./component/modal/index"
 import { ApiUserPasswordPrompt } from "./component/modal/login"
 import { buildUrl } from "./config_"
-import { WebRtcLinkHeader_Tags, webrtcLinkHeaderParse } from "./uniffi/moonlight_common_bindings"
+
+function parseIceServersFromLinkHeader(rawLinks: string): Array<RTCIceServer> {
+    const iceServers: Array<RTCIceServer> = []
+    for (const segment of rawLinks.split(",")) {
+        const [rawUrl, ...rawParams] = segment.split(";")
+        const urlMatch = rawUrl.trim().match(/^<(.+)>$/)
+        if (!urlMatch) {
+            continue
+        }
+
+        const params: Record<string, string> = {}
+        for (const part of rawParams) {
+            const [key, value] = part.split("=", 2)
+            if (!key || value == null) {
+                continue
+            }
+            params[key.trim().toLowerCase()] = value.trim().replace(/^"|"$/g, "")
+        }
+
+        const rel = params["rel"]?.toLowerCase()
+        if (rel !== "ice-server") {
+            continue
+        }
+
+        iceServers.push({
+            urls: urlMatch[1],
+            username: params["username"],
+            credential: params["credential"],
+        })
+    }
+    return iceServers
+}
 
 // IMPORTANT: this should be a bit bigger than the moonlight-common reqwest backend timeout if some hosts are offline!
 const API_TIMEOUT = 12000
@@ -538,24 +569,9 @@ export async function apiWebRTCConfiguration(api: Api): Promise<WebRTCConfigurat
         throw await FetchError.create("unknown", ENDPOINT, OPTIONS, e)
     }
 
-    const iceServers: Array<RTCIceServer> = []
-
     const rawLinks = response.headers.get("Link")
-    if (rawLinks) {
-        const links = webrtcLinkHeaderParse(rawLinks)
-        for (const link of links) {
-            if (link.tag == WebRtcLinkHeader_Tags.IceServer) {
-                iceServers.push({
-                    urls: link.inner.url,
-                    username: link.inner.username,
-                    credential: link.inner.credential,
-                })
-            }
-        }
-    }
-
     return {
-        iceServers
+        iceServers: rawLinks ? parseIceServersFromLinkHeader(rawLinks) : []
     }
 }
 

@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import fs from "node:fs";
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import CopyPlugin from "copy-webpack-plugin";
 
@@ -9,14 +10,56 @@ import CopyPlugin from "copy-webpack-plugin";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const hasUniffiBindings = fs.existsSync(path.resolve(__dirname, "web/uniffi/entry.ts"));
+
+const entry = {
+    // TODO: also include i18n
+    common: ["./web/styles/index.ts"],
+    index: "./web/index.ts",
+    admin: "./web/admin.ts"
+};
+if (hasUniffiBindings) {
+    entry.stream = "./web/stream.ts";
+}
+
+const plugins = [
+    new HtmlWebpackPlugin({
+        filename: 'index.html',
+        template: './web/index.html',
+        chunks: ['index'],
+        scriptLoading: 'blocking',
+        favicon: "./web/resources/moonlight.svg"
+    }),
+    new HtmlWebpackPlugin({
+        filename: 'admin.html',
+        template: './web/admin.html',
+        chunks: ['admin'],
+        scriptLoading: 'blocking',
+        favicon: "./web/resources/moonlight.svg"
+    }),
+    new CopyPlugin({
+        patterns: [
+            {
+                from: "./web/manifest.json",
+                to: "manifest.json"
+            },
+        ],
+    }),
+];
+if (hasUniffiBindings) {
+    plugins.push(
+        new HtmlWebpackPlugin({
+            filename: 'stream.html',
+            template: './web/stream.html',
+            chunks: ['stream'],
+            scriptLoading: 'blocking',
+            favicon: "./web/resources/moonlight.svg"
+        })
+    );
+}
+
 export default {
-    entry: {
-        // TODO: also include i18n
-        common: ["./web/styles/index.ts"],
-        index: "./web/index.ts",
-        stream: "./web/stream.ts",
-        admin: "./web/admin.ts"
-    },
+    entry,
     module: {
         rules: [
             {
@@ -46,37 +89,7 @@ export default {
             },
         ],
     },
-    plugins: [
-        new HtmlWebpackPlugin({
-            filename: 'index.html',
-            template: './web/index.html',
-            chunks: ['index'],
-            scriptLoading: 'blocking',
-            favicon: "./web/resources/moonlight.svg"
-        }),
-        new HtmlWebpackPlugin({
-            filename: 'stream.html',
-            template: './web/stream.html',
-            chunks: ['stream'],
-            scriptLoading: 'blocking',
-            favicon: "./web/resources/moonlight.svg"
-        }),
-        new HtmlWebpackPlugin({
-            filename: 'admin.html',
-            template: './web/admin.html',
-            chunks: ['admin'],
-            scriptLoading: 'blocking',
-            favicon: "./web/resources/moonlight.svg"
-        }),
-        new CopyPlugin({
-            patterns: [
-                {
-                    from: "./web/manifest.json",
-                    to: "manifest.json"
-                },
-            ],
-        }),
-    ],
+    plugins,
     resolve: {
         extensions: [".ts", ".js"]
     },
