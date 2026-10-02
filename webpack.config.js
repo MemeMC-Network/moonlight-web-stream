@@ -64,7 +64,13 @@ export default {
         rules: [
             {
                 test: /\.tsx?$/,
-                use: "ts-loader",
+                use: {
+                    loader: "ts-loader",
+                    options: {
+                        onlyCompileBundledFiles: true,
+                        transpileOnly: !hasUniffiBindings
+                    }
+                },
                 exclude: /node_modules/,
             },
             {
