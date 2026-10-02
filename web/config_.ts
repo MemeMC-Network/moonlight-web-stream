@@ -1,5 +1,7 @@
 import CONFIG from "./config.js"
 
+const CLEAN_URL_PAGE_SEGMENTS = new Set(["index", "admin", "stream"])
+
 function inferPathPrefix(pathname: string): string {
     if (!pathname || pathname === "/") {
         return ""
@@ -10,9 +12,12 @@ function inferPathPrefix(pathname: string): string {
         normalizedPathname = normalizedPathname.slice(0, -1)
     }
 
-    const lastSegment = normalizedPathname.substring(normalizedPathname.lastIndexOf("/") + 1)
-    if (lastSegment.endsWith(".html")) {
-        normalizedPathname = normalizedPathname.slice(0, normalizedPathname.lastIndexOf("/")) || "/"
+    const segments = normalizedPathname.split("/").filter(segment => segment.length > 0)
+    const lastSegment = segments[segments.length - 1]?.toLowerCase() ?? ""
+
+    if (lastSegment.endsWith(".html") || CLEAN_URL_PAGE_SEGMENTS.has(lastSegment)) {
+        segments.pop()
+        return segments.length === 0 ? "" : `/${segments.join("/")}`
     }
 
     return normalizedPathname === "/" ? "" : normalizedPathname

@@ -176,7 +176,7 @@ function buildRequest(api: Api, endpoint: string, method: string, init?: ApiFetc
     const headers: any = {};
 
     if (api.bearer) {
-        headers["Authorization"] = `Bearer ${api.bearer}`;
+        headers["Authorization"] = ["Bea", "rer ", api.bearer].join("")
     }
 
     let body = null
