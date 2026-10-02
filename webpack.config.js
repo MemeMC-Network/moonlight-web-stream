@@ -43,6 +43,10 @@ const plugins = [
                 from: "./web/manifest.json",
                 to: "manifest.json"
             },
+            {
+                from: "./web/config.js",
+                to: "config.js"
+            },
         ],
     }),
 ];
