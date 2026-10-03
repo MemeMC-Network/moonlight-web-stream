@@ -10,4 +10,7 @@ web:
   tsBindings: web/uniffi
   defaultFeatures: false
   features: ["web"]
+  cargoExtras:
+    - --target-dir
+    - rust_modules/wasm/target
   manifestPatchFile: ./Cargo.wasm.toml
